@@ -1,0 +1,103 @@
+name: Test the app when pull request is being created to staging and master
+
+on:
+  pull_request:
+    branches: [ staging, master ]
+
+jobs:
+  test:
+    services:
+      postgres:
+        image: postgres:13
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --mount type=tmpfs,destination=/var/lib/postgresql/data
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      POSTGRES_HOST: 127.0.0.1
+      IMPORT_API_PORT: "8777"
+      IMPORT_API_HOST: "127.0.0.1"
+      
+      DOCKER_KOMODO_SMARTCHAIN_NETWORK_SUBNET: ""
+      DATA_PATH: ""
+      AC_NAME: ""
+      AC_STAKED: ""
+      AC_REWARD: ""
+      AC_SUPPLY: ""
+      AC_PUBKEY: ""
+      AC_CC: ""
+      ADD_NODE_1: ""
+      ADD_NODE_2: ""
+      BATCH_SMARTCHAIN_NODE_USERNAME: ""
+      BATCH_SMARTCHAIN_NODE_PASSWORD: ""
+      BATCH_SMARTCHAIN_NODE_RPC_PORT: ""
+      BATCH_SMARTCHAIN_NODE_P2P_PORT: ""
+      BATCH_SMARTCHAIN_NODE_IPV4_ADDR: ""
+      KV1_NAME: ""
+      KV1_SMARTCHAIN_NODE_USERNAME: ""
+      KV1_SMARTCHAIN_NODE_PASSWORD: ""
+      KV1_SMARTCHAIN_NODE_RPC_PORT: ""
+      KV1_SMARTCHAIN_NODE_P2P_PORT: ""
+      KV1_SMARTCHAIN_NODE_IPV4_ADDR: ""
+      POSTGRES_IPV4_ADDR: ""
+      STANDALONE_POSTGRES_IPV4_ADDR: ""
+      IMPORT_API_IPV4_ADDR: ""
+      JUICYCHAIN_API_IPV4_ADDR: ""
+      STANDALONE_JUICYCHAIN_API_IPV4_ADDR: ""
+      JUICYCHAIN_API: ""
+      JUICYCHAIN_API_HOST: ""
+      JUICYCHAIN_API_VERSION_PATH: ""
+      JUICYCHAIN_API_PORT: ""
+      BLOCKNOTIFY_DIR: ""
+      BLOCKNOTIFY_CHAINSYNC_LIMIT: ""
+      HOUSEKEEPING_ADDRESS: ""
+      BLOCKNOTIFY_PYTHON_IPV4_ADDR: ""
+      THIS_NODE_PUBKEY: ""
+      THIS_NODE_WIF: ""
+      THIS_NODE_WALLET: ""
+      THIS_NODE_RADDRESS: ""
+      INJECT_IMPORT_API_BATCH_IPV4_ADDR: ""
+      JUICYCHAIN_EXPLORER_MAINNET_UNCHAIN: ""
+      JUICYCHAIN_EXPLORER_MAINNET_UNCHAIN_PORT: ""
+      CUSTOMER_RADDRESS: ""
+      DISCORD_WEBHOOK_URL: ""
+      GTID: ""
+      
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout repo
+        uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.ACCESS_TOKEN }}
+          submodules: true
+      - name: set up python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'
+      - name: install required packages
+        run: |
+          sudo apt install libcurl4-gnutls-dev librtmp-dev
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install python-dotenv django-test-migrations==1.2.0
+      - name: run the django app
+        working-directory: ./src
+        run: |
+          python manage.py migrate
+          python manage.py runserver $IMPORT_API_HOST:$IMPORT_API_PORT &
+      - name: run the migration test
+        working-directory: ./src/batch/test
+        run: |
+          pytest -v test_migration.py
+      - name: run the endpoint test
+        working-directory: ./src/batch/test
+        run: |
+          pytest -v test_import_api.py
