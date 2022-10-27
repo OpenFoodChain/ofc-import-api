@@ -1,8 +1,10 @@
 name: Test the app when pull request is being created to staging and master
 
 on:
+  push:
+    branches: [ master ]
   pull_request:
-    branches: [ staging, master ]
+    branches: [ master ]
 
 jobs:
   test:
