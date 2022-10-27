@@ -71,7 +71,7 @@ jobs:
       JUICYCHAIN_EXPLORER_MAINNET_UNCHAIN_PORT: ""
       CUSTOMER_RADDRESS: ""
       DISCORD_WEBHOOK_URL: ""
-      GTID: ""
+      #GTID: ""
       
     runs-on: ubuntu-latest
     steps:
