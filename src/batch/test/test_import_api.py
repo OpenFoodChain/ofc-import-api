@@ -6,7 +6,7 @@ import os
 import json
 from datetime import date, timedelta
 
-pytest.url = 'http://localhost:8999/'
+pytest.url = 'http://localhost:8777/'
 #'http://' + str(os.environ.get('IMPORT_API_HOST')) + ':' + str(os.environ.get('IMPORT_API_PORT')) + '/'
  
 pytest.today = (date.today()).isoformat()
