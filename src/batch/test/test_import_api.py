@@ -6,7 +6,9 @@ import os
 import json
 from datetime import date, timedelta
 
-pytest.url = 'http://' + os.environ.get('IMPORT_API_HOST') + ':' + os.environ.get('IMPORT_API_PORT') + '/'
+pytest.url = 'http://localhost:8999/'
+#'http://' + str(os.environ.get('IMPORT_API_HOST')) + ':' + str(os.environ.get('IMPORT_API_PORT')) + '/'
+ 
 pytest.today = (date.today()).isoformat()
 pytest.next_week = (date.today() + timedelta(days=7)).isoformat()
 pytest.bbd = (date.today() + timedelta(days=14)).isoformat()
